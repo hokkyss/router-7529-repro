@@ -1,13 +1,13 @@
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { Await, createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { Suspense } from 'react'
 import z from 'zod'
+import { useContext } from '~/context'
 
 const queryOpts = () => queryOptions({
   queryKey: ['test-query'],
   queryFn: async () => {
-    await sleep(1000);
+    await sleep(10);
     return ({ success: true })
   }
 })
@@ -21,7 +21,7 @@ function sleep(ms: number) {
 const serverFunction = createServerFn()
   .validator(z.object({}))
   .handler(async (ctx) => {
-    await sleep(3000)
+    await sleep(20)
     return z.object({
       success: z.string()
     }).parse({ success: 'aw' })
@@ -43,12 +43,22 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
-  const { secondPromise } = Route.useLoaderData()
+  const { success } = useContext();
+  const promise = Route.useLoaderData({
+    select: d => d.promise,
+  })
+  const secondPromise = Route.useLoaderData({
+    select: d => d.secondPromise,
+  })
+  // const { secondPromise, promise } = Route.useLoaderData()
 
   return (
     <>
       <div>Static</div>
-      <WrappedHome />
+      <div>context: {success}</div>
+      <Await promise={promise}>
+        {() => <WrappedHome />}
+      </Await>
       <Await promise={secondPromise}>
         {() => <SecondHome />}
       </Await>

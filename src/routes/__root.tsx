@@ -9,12 +9,18 @@ import * as React from 'react'
 import type { QueryClient } from '@tanstack/react-query'
 
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
+import { ContextProvider } from '~/context'
+import { createIsomorphicFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
+import { getOrigin } from '@tanstack/react-router/ssr/server'
+
+const getApplicationUrl = createIsomorphicFn()
+  .server(() => getOrigin(getRequest()))
+  .client(() => location.origin);
 
 const queryOpts = () => queryOptions({
   queryKey: ['test-query-root'],
-  queryFn: () => new Promise<{ success: boolean }>((res, rej) => {
-    setTimeout(() => res({ success: true }), 1000)
-  })
+  queryFn: () => ({ success: true })
 })
 
 export const Route = createRootRouteWithContext<{
@@ -24,7 +30,6 @@ export const Route = createRootRouteWithContext<{
     await ctx.context.queryClient.ensureQueryData(queryOpts());
     return {};
   },
-  component: Outlet,
   shellComponent: RootDocument,
   head: () => {
     return {
@@ -37,6 +42,11 @@ export const Route = createRootRouteWithContext<{
           children: 'console.log("aw");'
         }
       ],
+      links: [
+        {
+          href: new URL('manifest.webmanifest', getApplicationUrl()).toString(),
+        }
+      ]
     }
   },
   pendingComponent: Pending
@@ -52,13 +62,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const { data } = useSuspenseQuery({
     ...queryOpts(),
   })
+
   return (
     <html data-testid={data.success ? 'testid' : 'none'}>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ContextProvider value={data.success ? 'rootsuccess' : 'rootfail'}>
+          {children}
+        </ContextProvider>
         <Scripts />
       </body>
     </html>

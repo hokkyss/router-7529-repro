@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuspenseRouteImport } from './routes/suspense'
+import { Route as ManifestDotwebmanifestRouteImport } from './routes/manifest[.]webmanifest'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SuspenseRoute = SuspenseRouteImport.update({
   id: '/suspense',
   path: '/suspense',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManifestDotwebmanifestRoute = ManifestDotwebmanifestRouteImport.update({
+  id: '/manifest.webmanifest',
+  path: '/manifest.webmanifest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/suspense': typeof SuspenseRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/suspense': typeof SuspenseRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/suspense': typeof SuspenseRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/suspense'
+  fullPaths: '/' | '/manifest.webmanifest' | '/suspense'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/suspense'
-  id: '__root__' | '/' | '/suspense'
+  to: '/' | '/manifest.webmanifest' | '/suspense'
+  id: '__root__' | '/' | '/manifest.webmanifest' | '/suspense'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ManifestDotwebmanifestRoute: typeof ManifestDotwebmanifestRoute
   SuspenseRoute: typeof SuspenseRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/suspense'
       fullPath: '/suspense'
       preLoaderRoute: typeof SuspenseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manifest.webmanifest': {
+      id: '/manifest.webmanifest'
+      path: '/manifest.webmanifest'
+      fullPath: '/manifest.webmanifest'
+      preLoaderRoute: typeof ManifestDotwebmanifestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ManifestDotwebmanifestRoute: ManifestDotwebmanifestRoute,
   SuspenseRoute: SuspenseRoute,
 }
 export const routeTree = rootRouteImport

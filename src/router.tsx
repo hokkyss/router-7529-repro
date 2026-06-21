@@ -20,6 +20,7 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     trailingSlash: 'never',
+    defaultPreload: "intent",
     ssr: {
       nonce: 'xyz'
     }
